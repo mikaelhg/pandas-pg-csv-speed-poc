@@ -4,10 +4,16 @@ services:
 
   db:
     image: 'postgres:10-alpine'
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
 
   test_runner:
     image: pandas_speed_poc:temp
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile.test-runner
-    
+    volumes:
+      - '.:/app'
+    working_dir: '/app'
