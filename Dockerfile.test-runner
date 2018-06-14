@@ -2,8 +2,9 @@ FROM ubuntu:18.04
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get -qq update && \
     apt-get -y -qq install python3-dev python3-pip python3-psycopg2 \
-                       build-essential \
+                       build-essential supervisor \
                        bash less nano wait-for-it
 RUN pip3 install sqlalchemy numpy pandas \
                  pytest pytest-benchmark
+WORKDIR /app
 CMD pytest
