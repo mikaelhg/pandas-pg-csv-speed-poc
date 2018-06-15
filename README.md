@@ -1,5 +1,14 @@
 # Q: "Pandas is faster to load CSV than SQL", A: ...
 
+## TL;DR
+
+```bash
+docker-compose up -d
+docker-compose exec test pytest
+```
+
+----
+
 https://stackoverflow.com/questions/43874559/pandas-is-faster-to-load-csv-than-sql/50809892
 
 "Haelle" asks:
@@ -33,3 +42,18 @@ print('{0}s'.format(duration))
 > SQL takes 0.5s
 >
 > Do you think it's normal that CSV is 10 time faster than SQL ? I'm wondering if I'm missing something here...
+
+-----
+
+https://stackoverflow.com/questions/41231163/accessing-large-datasets-with-python-3-6-psycopg2-and-pandas
+
+Nice concept by MaxU:
+
+```python
+start = time.time()
+engine = create_engine(conn_str)
+size = 10**4
+df = pd.concat((x for x in pd.read_sql(query, engine, coerce_float=False, chunksize=size)),
+               ignore_index=True)
+print('time:', (time.time() - start)/60, 'minutes or ', time.time() - start, 'seconds')
+```
