@@ -4,7 +4,7 @@ services:
 
   db:
     image: 'postgres:10-alpine'
-    command: "postgres -c 'shared_buffers=512MB'"
+    command: "postgres -c 'shared_buffers=512MB' -c 'temp_buffers=80MB' -c 'work_mem=256MB'"
     ports:
       - '5432:5432'
     volumes:

@@ -57,7 +57,7 @@ class TestImportDataSpeed(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.engine = create_engine(DB_UNIX_SOCKET_URL, connect_args={'cursor_factory': my_cursor_factory})
+        cls.engine = create_engine(DB_TCP_URL, connect_args={'cursor_factory': my_cursor_factory})
         connection = cls.engine.connect().connection
         cursor = connection.cursor()
 
@@ -73,17 +73,33 @@ class TestImportDataSpeed(unittest.TestCase):
         cursor.execute(VACUUM)
 
         cursor.close()
+        connection.close()
 
-
-    def test_csv(self):
+    def test_pd_csv(self):
 
         def result():
-            return pd.read_csv(DATA_FILE, delimiter=';')
+            return pd.read_csv(DATA_FILE, delimiter=';', low_memory=False)
 
         df = self.benchmark(result)
         assert df.shape == (3742616, 6)
 
-    def test_db(self):
+    def test_psycopg2_cursor(self):
+
+        def result():
+            connection = self.engine.connect().connection
+            cursor = connection.cursor()
+            cursor.itersize = 102400
+            cursor.arraysize = 102400
+            cursor.execute(SELECT_FROM)
+            rows = cursor.fetchall()
+            cursor.close()
+            connection.close()
+            return pd.DataFrame(rows)
+
+        df = self.benchmark(result)
+        assert df.shape == (3742616, 6)
+
+    def test_pd_sqla_naive(self):
 
         def result():
             return pd.read_sql_query(SELECT_FROM, self.engine)
@@ -91,7 +107,7 @@ class TestImportDataSpeed(unittest.TestCase):
         df = self.benchmark(result)
         assert df.shape == (3742616, 6)
 
-    def test_db_chunked(self):
+    def test_pd_sqla_chunked(self):
 
         def result():
             gen = (x for x in pd.read_sql(SELECT_FROM, self.engine, chunksize=10240))
@@ -108,7 +124,7 @@ class TestImportDataSpeed(unittest.TestCase):
             f = io.StringIO()
             cursor.copy_expert(COPY_TO, file=f, size=1048576)
             f.seek(0)
-            return pd.read_csv(f)
+            return pd.read_csv(f, low_memory=False)
 
         df = self.benchmark(result, cursor)
         assert df.shape == (3742616, 6)
