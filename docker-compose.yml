@@ -4,9 +4,12 @@ services:
 
   db:
     image: 'postgres:10-alpine'
-    command: "postgres -c 'shared_buffers=256MB'"
+    command: "postgres -c 'shared_buffers=512MB'"
     ports:
       - '5432:5432'
+    volumes:
+      - '/dev/shm/pgtest/data:/var/lib/postgresql/data'
+      - '/dev/shm/pgtest/run:/var/run/postgresql'
     environment:
       POSTGRES_USER: test
       POSTGRES_PASSWORD: test
@@ -19,5 +22,6 @@ services:
       dockerfile: Dockerfile.test-runner
     volumes:
       - '.:/app'
+      - '/dev/shm/pgtest/run:/var/run/postgresql'
     working_dir: '/app'
     user: '1000'

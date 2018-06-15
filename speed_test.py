@@ -40,10 +40,9 @@ SELECT_FROM = 'SELECT * FROM licenses'
 
 VACUUM = "VACUUM FULL ANALYZE"
 
-class LargeCursor(psycopg2.extensions.cursor):
-    def __init__(self, *args, **kwargs):
-        super(LargeCursor, self).__init__(*args, **kwargs)
-        self.itersize = 10240
+DB_UNIX_SOCKET_URL = 'postgresql://test:test@/test'
+
+DB_TCP_URL = 'postgresql://test:test@db/test'
 
 def my_cursor_factory(*args, **kwargs):
     cursor = psycopg2.extensions.cursor(*args, **kwargs)
@@ -58,8 +57,7 @@ class TestImportDataSpeed(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.engine = create_engine('postgresql://test:test@db/test',
-                                   connect_args={'cursor_factory': my_cursor_factory})
+        cls.engine = create_engine(DB_UNIX_SOCKET_URL, connect_args={'cursor_factory': my_cursor_factory})
         connection = cls.engine.connect().connection
         cursor = connection.cursor()
 
